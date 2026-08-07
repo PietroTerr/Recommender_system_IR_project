@@ -25,7 +25,6 @@ from data_loader import load_index, load_news
 
 RADICE = Path(__file__).resolve().parent
 BEHAVIORS_DEV = RADICE / "data/dev/behaviors.tsv"
-BEHAVIORS_TRAIN = RADICE / "data/train/behaviors.tsv"
 
 
 def carica_modello(cartella: Path):
@@ -36,24 +35,19 @@ def carica_modello(cartella: Path):
 
 
 def history_di(user_id: str):
-    """Cerca la History di un utente in entrambi gli split.
+    """Cerca la History di un utente scorrendo behaviors.tsv.
 
-    Train e dev di MIND-small condividono solo 5.943 dei 50.000 utenti, quindi
-    cercare in un solo file lascerebbe fuori la maggior parte degli ID
-    possibili. Si restituisce anche da quale split proviene il profilo.
-
-    Si legge riga per riga con uscita anticipata invece di caricare i file in
+    Si legge riga per riga con uscita anticipata invece di caricare i 40 MB in
     un DataFrame: qui serve un solo utente, e la demo deve rispondere subito.
     """
-    for etichetta, percorso in (("dev", BEHAVIORS_DEV), ("train", BEHAVIORS_TRAIN)):
-        if not percorso.exists():
-            sys.exit(f"manca {percorso}: eseguire prima data_downloader.py")
-        with open(percorso, encoding="utf-8") as f:
-            for riga in f:
-                campi = riga.rstrip("\n").split("\t")
-                if len(campi) >= 4 and campi[1] == user_id:
-                    return campi[3].split(), etichetta
-    return None, None
+    if not BEHAVIORS_DEV.exists():
+        sys.exit(f"manca {BEHAVIORS_DEV}: eseguire prima data_downloader.py")
+    with open(BEHAVIORS_DEV, encoding="utf-8") as f:
+        for riga in f:
+            campi = riga.rstrip("\n").split("\t")
+            if len(campi) >= 4 and campi[1] == user_id:
+                return campi[3].split()
+    return None
 
 
 def utente_a_caso(rng: random.Random, min_articoli: int = 5):
@@ -104,11 +98,10 @@ def main() -> int:
     if args.news:
         user_id, graditi = None, args.news
     elif args.utente:
-        graditi, split = history_di(args.utente)
+        graditi = history_di(args.utente)
         if graditi is None:
-            sys.exit(f"utente {args.utente} non trovato ne' nel train ne' nel dev")
+            sys.exit(f"utente {args.utente} non trovato nel dev")
         user_id = args.utente
-        print(f"(profilo letto da data/{split}/behaviors.tsv)\n")
     else:
         user_id, graditi = utente_a_caso(random.Random(args.seed))
         print(f"(nessun argomento: uso l'utente {user_id} preso dal dev)\n")
@@ -154,5 +147,5 @@ if __name__ == "__main__":
     raise SystemExit(main())
 
 
-# python recommend.py --utente U90227 --top 5
+# python recommend.py --utente U13740 --top 5
 # python recommend.py --news N55189 N42782 N34694
