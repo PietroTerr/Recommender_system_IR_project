@@ -1,0 +1,18 @@
+# Ambiente virtuale e bytecode
+.venv/
+__pycache__/
+*.pyc
+
+# Dataset: ~210 MB, si riscarica con `python data_downloader.py`
+data/
+
+# Artefatti rigenerabili (matrici sparse, fattori, strutture di valutazione).
+# Le figure restano versionate perche' servono alla relazione.
+artifacts/**
+!artifacts/**/
+!artifacts/**/*.png
+
+# Editor e sistema
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,11 @@
+# Versioni usate per produrre i risultati riportati nel README.
+# Nessuna libreria di recommender system: WALS, TF-IDF e le metriche di
+# ranking sono implementati nel progetto.
+numpy==2.5.1
+scipy==1.18.0
+pandas==3.0.5
+matplotlib==3.11.1
+
+# Serve solo a data_downloader.py per scaricare il mirror del dataset.
+# Non e' usata da nessun altro modulo.
+huggingface_hub==1.26.0
