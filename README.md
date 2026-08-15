@@ -1,17 +1,12 @@
-# IR_recommender_project
+# IR recommender system project
 
-Sistema di raccomandazione con Weighted Matrix Factorisation — Progetto #9 del
-corso di Information Retrieval, Università di Trieste.
+Recommender system con Weighted Matrix Factorisation — Pietro Terribile
+Progetto #9 di Information Retrieval, Università di Trieste.
 
-Dato un utente descritto come *insieme di documenti graditi*, il sistema
-restituisce un ranking di articoli di notizie. Gli embedding di utenti e
-articoli sono ottenuti con una **Weighted Matrix Factorisation** risolta
-tramite **Weighted Alternating Least Squares**, implementata da zero: il
-progetto non usa librerie di recommender system, e anche le metriche di
-ranking sono scritte a mano.
+Dataset: **MIND-small** (Microsoft News Dataset), 50.000 utenti e 51.282 articoli.
+Dato un utente, descritto come *insieme di documenti graditi*, il sistema restituisce un ranking di articoli di notizie. 
+Gli embedding di utenti e articoli sono ottenuti con una **Weighted Matrix Factorisation** risolta tramite **Weighted Alternating Least Squares**, implementata da zero.
 
-Dataset: **MIND-small** (Microsoft News Dataset), 50.000 utenti e 51.282
-articoli.
 
 ## Requisiti ed esecuzione
 
@@ -35,8 +30,7 @@ Gli script vanno eseguiti **dalla radice del progetto**, in quest'ordine:
 | `python demo_web.py` | **demo**: interfaccia web su `localhost:8000` | immediato |
 | `python recommend.py` | demo da riga di comando | immediato |
 
-Ogni script salva i propri risultati su disco e li ricarica se già presenti,
-quindi non c'è mai bisogno di rifare da capo un passaggio già eseguito.
+Ogni script salva i propri risultati su disco e li ricarica se già presenti.
 `figure.py` è lento solo la prima volta, perché addestra sei modelli per la
 curva su `w_neg`; le esecuzioni successive riusano la cache.
 
@@ -46,12 +40,8 @@ curva su `w_neg`; le esecuzioni successive riusano la cache.
 python test_correttezza.py --dataset
 ```
 
-Dodici test in pochi secondi. Il rischio di questo progetto non sono i crash,
-sono i numeri sbagliati ma plausibili: un MAP di 0,26 sembra ragionevole sia
-che il codice sia giusto sia che si stia sbagliando un segno. I test
-verificano quindi le **identità matematiche** su cui poggia l'implementazione,
-confrontando ogni forma ottimizzata con la definizione calcolata per esteso su
-matrici giocattolo:
+Dodici test in pochi secondi. Il rischio di questo progetto non sono i crash, sono i valori ambigui: 
+un MAP di 0,26 sembra ragionevole sia che il codice sia giusto sia che si stia sbagliando un segno. I test verificano quindi le **identità matematiche** su cui poggia l'implementazione, confrontando ogni forma ottimizzata con la definizione calcolata per esteso su matrici giocattolo:
 
 - la riscrittura con la Gramiana, su entrambi i rami dell'alternanza, contro
   la somma su tutte le colonne;
@@ -84,12 +74,7 @@ per titolo e aggiungendoli al profilo, oppure si carica il profilo di un
 utente reale del dataset; il sistema restituisce il ranking sull'intero
 catalogo con categoria, sottocategoria e punteggio, e il tempo impiegato.
 
-Usa solo `http.server` della libreria standard, con HTML e JavaScript in
-linea: nessuna dipendenza aggiuntiva e nessuna risorsa esterna, quindi
-funziona anche senza rete. Ascolta solo su `127.0.0.1`.
-
-I risultati della ricerca sono ordinati per **forza del segnale**, cioè per
-`‖v_j‖`, e ciascuno mostra tre pallini che la riassumono. La ragione è che un
+I risultati della ricerca sono ordinati per **forza del segnale* `‖v_j‖`, e ciascuno mostra tre pallini che la riassumono. La ragione è che un
 articolo letto da pochissimi utenti viene schiacciato a zero dalla
 regolarizzazione: aggiungerlo al profilo non sposta il vettore utente. Filtro e
 ordinamento restano due passaggi distinti, quindi l'ordinamento non può far
@@ -98,8 +83,8 @@ entrare articoli che non corrispondono alla ricerca.
 Quando il profilo è troppo debole compare un avviso. Il criterio non è il
 numero di articoli ma il loro peso effettivo nel sistema del fold-in, cioè il
 rapporto fra la traccia della correzione e quella del termine comune
-`w₀·VᵀV + λI` (si sfrutta il fatto che `traccia(Σ v vᵀ) = Σ‖v‖²`, quindi il
-calcolo è immediato lato pagina). Il conteggio da solo ingannerebbe:
+`w₀·VᵀV + λI` (si sfrutta il fatto che `tr(Σ v vᵀ) = Σ‖v‖²`, quindi il
+calcolo è immediato lato pagina).
 
 | profilo | peso | risultati in tema |
 |---|---|---|
@@ -113,7 +98,7 @@ essa il vettore utente resta vicino al prior, i punteggi calano di un ordine di
 grandezza e il ranking si appoggia agli articoli più co-cliccati: la scala del
 punteggio misura la confidenza, non la qualità del match.
 
-### Riga di comando
+### Esempio di utilizzo da riga di comando
 
 ```bash
 python recommend.py --utente U90227 --top 5
@@ -143,13 +128,13 @@ prodotto in 1.4 ms (fold-in + punteggio su tutto il catalogo)
 L'utente **non esiste nel training**: viene collocato nello spazio latente
 partendo dai soli sette articoli che gli piacciono. Il profilo unisce sport e
 vicende giudiziarie, e il ranking restituisce articoli su **atleti coinvolti
-in casi penali**: non è coincidenza di categoria, è struttura latente.
+in casi penali**.
 
 Altre modalità:
 
 ```bash
 python recommend.py --news N55189 N42782 N34694
-python recommend.py                       # utente a caso dal dev
+python recommend.py # utente a caso dal dev
 ```
 
 ## Struttura
@@ -172,9 +157,7 @@ presentazione.md      traccia della presentazione, 15 slide
 
 **La fonte ufficiale non è più accessibile.** Dal luglio 2024 lo storage
 account Microsoft che ospita MIND rifiuta l'accesso anonimo con HTTP 409
-`PublicAccessNotPermitted`; le segnalazioni aperte sul repository del dataset
-e sulla libreria `recommenders` non hanno avuto risposta, e la pagina Azure
-Open Datasets punta ancora a quel percorso. Si usa quindi un mirror su
+`PublicAccessNotPermitted`. Si usa quindi un mirror su
 Hugging Face che espone i file `.tsv` originali senza modifiche.
 
 L'autenticità è stata verificata confrontando formato e statistiche con
@@ -199,8 +182,7 @@ deduplicate: 5,8 milioni di token diventano 1.148.447 coppie distinte.
 **Train e dev contengono utenti diversi.** Hanno 50.000 utenti ciascuno, ma ne
 condividono solo **5.943**. Per l'88% delle impression del dev non esiste una
 riga in `U`, e l'unico modo di ottenere un punteggio personalizzato è ricavare
-il vettore utente dalla sua `History`. Il fold-in richiesto dal progetto non è
-quindi una funzionalità accessoria: è l'unico modo di valutare il modello.
+il vettore utente dalla sua `History`. Il fold-in quindi è l'unico modo di valutare correttamente il modello.
 
 ## Modello
 
@@ -223,7 +205,7 @@ observed-only MF, `w₀ = w_pos = w_neg` dà la SVD.
 ### WALS e la riscrittura con la Gramiana
 
 Annullando il gradiente rispetto a `u_i` si ottiene un sistema `k × k` la cui
-matrice, scritta in modo ingenuo, somma su tutte le 51.282 colonne. Poiché le
+matrice, scritta in modo naive, somma su tutte le 51.282 colonne. Poiché le
 celle non osservate condividono lo stesso peso, la somma si spezza in un
 termine comune più una correzione sulle sole celle osservate:
 
@@ -237,18 +219,17 @@ tocca solo le ~23 celle positive e ~96 negative dell'utente. Il costo per
 utente passa da `O(n·k²)` a `O((|P_i|+|N_i|)·k² + k³)`, e un'iterazione
 completa impiega circa 6 secondi. La perdita è calcolata in forma esatta senza
 espandere la matrice densa, sfruttando `Σ_ij (u_i·v_j)² =
-traccia((UᵀU)(VᵀV))`, e si verifica che sia non crescente a ogni iterazione.
+tr((UᵀU)(VᵀV))`, e si verifica che sia non crescente a ogni iterazione.
 
 Il **fold-in** è lo stesso sistema ristretto alle celle positive: di un utente
 nuovo non si sa cosa gli sia stato mostrato senza essere cliccato.
 
 ## Valutazione
 
-Le metriche sono quelle del corso — **MAP, P@k, R-precision** e la curva di
-**precisione interpolata a 11 punti** — e non AUC/MRR/nDCG usate in
-letteratura su MIND. Con rilevanza binaria le due famiglie misurano la stessa
+Le metriche sono **MAP, P@k, R-precision** e la curva di
+**precisione interpolata a 11 punti**. Con rilevanza binaria le due famiglie misurano la stessa
 cosa: nel 71,2% delle impression del dev c'è un solo click, e lì l'Average
-Precision coincide con il reciproco del rango. L'AUC resta implementata ma
+Precision coincide con il reciproco del rango. L'AUC è a sua volta implementata ma
 serve solo come test di correttezza, essendo l'unica misura con valore atteso
 noto su uno scorer casuale (verificato: 0,5007 su 73.152 impression).
 
@@ -295,15 +276,13 @@ preferenza. È bias di esposizione allo stato puro.
 **Il feedback a tre livelli funziona.** Portare `w_neg` da 0,025 — cioè
 trattare "mostrato e ignorato" come "mai mostrato" — a 0,5 porta il MAP da
 0,2574 a 0,2630 e la R-precision da 0,1249 a 0,1313: **+2,2% e +5,1%** solo
-per aver usato l'informazione degli impression log. È l'ipotesi centrale del
-progetto, e regge.
+per aver usato l'informazione degli impression log.
 
 **Il fold-in non costa nulla in qualità.** Sui 5.943 utenti presenti in
 entrambi gli split, ricavare il vettore dalla `History` dà MAP 0,2618 contro
 0,2632 ottenuto usando la riga di `U` appresa: 0,5% di differenza. Un utente
 descritto solo dai documenti che gli piacciono vale quanto un utente
-addestrato — il che rende il requisito del progetto una proprietà misurata,
-non un'asserzione.
+addestrato.
 
 **Una WMF pura perde contro il CTR sul protocollo per impression**, e nessuna
 taratura di `k`, `w₀`, `w_neg` o `λ` ha colmato il divario (plateau fra 0,255
